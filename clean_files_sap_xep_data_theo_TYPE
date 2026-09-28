@@ -1,1 +1,53 @@
+import os
+import shutil
+from pathlib import Path
 
+# 1. Điền đường dẫn thư mục đang bị lộn xộn của bạn vào đây
+TARGET_DIR = Path(r"C:\Users\TenCuaBan\Downloads")  # Thay bằng đường dẫn thực tế
+
+# 2. Định nghĩa các nhóm file và đuôi mở rộng tương ứng
+FILE_CATEGORIES = {
+    "01_Excel_CSV": [".xlsx", ".xls", ".csv"],
+    "02_Word_PDF": [".docx", ".doc", ".pdf", ".txt"],
+    "03_HinhAnh": [".jpg", ".jpeg", ".png", ".gif", ".svg"],
+    "04_Nen_LuuTru": [".zip", ".rar", ".7z"],
+    "05_CaiDat_PhanMem": [".exe", ".msi"],
+    "06_Video_AmThanh": [".mp4", ".mp3", ".avi", ".mov"],
+}
+
+def clean_up_folder(folder_path):
+    folder = Path(folder_path)
+    
+    if not folder.exists():
+        print("Đường dẫn thư mục không tồn tại. Vui lòng kiểm tra lại!")
+        return
+
+    # Duyệt qua từng file trong thư mục
+    for item in folder.iterdir():
+        # Bỏ qua nếu là thư mục đã có sẵn
+        if item.is_dir():
+            continue
+
+        ext = item.suffix.lower()
+        moved = False
+
+        # Kiểm tra file thuộc nhóm nào và di chuyển
+        for category, extensions in FILE_CATEGORIES.items():
+            if ext in extensions:
+                dest_dir = folder / category
+                dest_dir.mkdir(exist_ok=True) # Tạo thư mục nếu chưa có
+                
+                shutil.move(str(item), str(dest_dir / item.name))
+                print(f"Đã chuyển: {item.name} -> {category}/")
+                moved = True
+                break
+
+        # Các file không thuộc nhóm trên sẽ vào mục "07_Khac"
+        if not moved and ext != "":
+            dest_dir = folder / "07_Khac"
+            dest_dir.mkdir(exist_ok=True)
+            shutil.move(str(item), str(dest_dir / item.name))
+            print(f"Đã chuyển: {item.name} -> 07_Khac/")
+
+if __name__ == "__main__":
+    clean_up_folder(TARGET_DIR)
